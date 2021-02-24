@@ -14,7 +14,7 @@ public class EatNFitApplication {
         try {
             //System.getProperties().put("proxySet", "true");
             //System.getProperties().put("socksProxyHost", "127.0.0.1");
-           // System.getProperties().put("socksProxyPort", "9150");
+            //System.getProperties().put("socksProxyPort", "9150");
 
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botsApi.registerBot(new Bot(getenv.get("BOT_NAME"), getenv.get("BOT_TOKEN")));

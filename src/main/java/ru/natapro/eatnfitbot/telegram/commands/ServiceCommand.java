@@ -1,4 +1,4 @@
-package ru.natapro.eatnfitbot.telegram.commands.service;
+package ru.natapro.eatnfitbot.telegram.commands;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

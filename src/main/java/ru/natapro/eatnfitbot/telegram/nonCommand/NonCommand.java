@@ -1,9 +1,15 @@
 package ru.natapro.eatnfitbot.telegram.nonCommand;
 
+import java.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.natapro.eatnfitbot.telegram.Bot;
+import ru.natapro.eatnfitbot.telegram.Utils;
+import ru.natapro.eatnfitbot.telegram.domain.Result;
+import ru.natapro.eatnfitbot.telegram.domain.User;
 import ru.natapro.eatnfitbot.telegram.exceptions.IllegalSettingsException;
+import ru.natapro.eatnfitbot.telegram.service.UserService;
 
 /**
  * Обработка сообщения, не являющегося командой (т.е. обычного текста не начинающегося с "/")
@@ -11,7 +17,12 @@ import ru.natapro.eatnfitbot.telegram.exceptions.IllegalSettingsException;
 public class NonCommand {
     private Logger logger = LoggerFactory.getLogger(NonCommand.class);
 
-    public String nonCommandExecute(Long chatId, String userName, String text) {
+    public String nonCommandExecute(Long chatId, Message msg) {
+        var text = msg.getText();
+        var user = msg.getFrom();
+        var userName = Utils.getUserName(user);
+        var userFirstName = Utils.getUserFirstName(user);
+        var userLastName = Utils.getUserLastName(user);
         logger.debug(String.format("Пользователь %s. Начата обработка сообщения \"%s\", не являющегося командой",
                 userName, text));
 
@@ -21,10 +32,10 @@ public class NonCommand {
             logger.debug(String.format("Пользователь %s. Пробуем создать объект настроек из сообщения \"%s\"",
                     userName, text));
             settings = createSettings(text);
-            saveUserSettings(chatId, settings);
+            saveUserSettings(chatId, settings, userName, userFirstName, userLastName);
             logger.debug(String.format("Пользователь %s. Объект настроек из сообщения \"%s\" создан и сохранён",
                     userName, text));
-            answer = "Спасибо! Давайте начнем!";
+            answer = "Спасибо! Давайте начнем! Я буду ежедневно кидать вам ссылки в обиен на вес!";
         } catch (IllegalSettingsException e) {
             logger.debug(String.format("Пользователь %s. Не удалось создать объект настроек из сообщения \"%s\". " +
                     "%s", userName, text, e.getMessage()));
@@ -56,7 +67,7 @@ public class NonCommand {
         text = text.replaceAll("-", "")//избавляемся от отрицательных чисел
                 .replaceAll(" ", "@");//меняем разделитель-пробел на @
         String[] parameters = text.split("@");
-        if (parameters.length != 4) {
+        if (parameters.length != 3) {
             throw new IllegalArgumentException(String.format("Не удалось разбить сообщение \"%s\" на 3 составляющих",
                     text));
         }
@@ -82,16 +93,38 @@ public class NonCommand {
     }
 
     /**
-     * Добавление настроек пользователя в мапу, чтобы потом их использовать для этого пользователя при генерации файла
-     * Если настройки совпадают с дефолтными, они не сохраняются, чтобы впустую не раздувать мапу
+     * Сохранение настроек пользователя в базу данных
      * @param chatId id чата
      * @param settings настройки
      */
-    private void saveUserSettings(Long chatId, Settings settings) {
-        if (!settings.equals(Bot.getDefaultSettings())) {
-            Bot.getUserSettings().put(chatId, settings);
-        } else {
-            Bot.getUserSettings().remove(chatId);
+    private void saveUserSettings(Long chatId, Settings settings, String userName, String userFirstName,
+        String userLastName) {
+
+        var userService = new UserService();
+        User user = userService.findUser(chatId);
+        boolean isNewUser = false;
+        if (user == null) {
+            user = new User();
+            isNewUser = true;
         }
+
+        user.setChatId(chatId);
+        user.setStartWeight(settings.getStartWeight());
+        user.setAge(settings.getAge());
+        user.setPhone(settings.getPhone());
+        user.setNickName(userName);
+        user.setFirstName(userFirstName);
+        user.setLastName(userLastName);
+        if (isNewUser) {
+            userService.saveUser(user);
+        } else {
+            userService.updateUser(user);
+        }
+
+        Result result = new Result();
+        result.setDate(LocalDate.now());
+        result.setUser(user);
+        result.setCurrentWeight(settings.getStartWeight());
+        userService.saveUserResult(result);
     }
 }

@@ -1,4 +1,4 @@
-package ru.natapro.eatnfitbot.telegram.commands.service;
+package ru.natapro.eatnfitbot.telegram.commands;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,12 +8,12 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 import ru.natapro.eatnfitbot.telegram.Utils;
 
 /**
- * Команда "Помощь"
+ * Команда "Старт"
  */
-public class HelpCommand extends ServiceCommand {
-    private Logger logger = LoggerFactory.getLogger(HelpCommand.class);
+public class StartCommand extends ServiceCommand {
+    private Logger logger = LoggerFactory.getLogger(StartCommand.class);
 
-    public HelpCommand(String identifier, String description) {
+    public StartCommand(String identifier, String description) {
         super(identifier, description);
     }
 
@@ -24,8 +24,9 @@ public class HelpCommand extends ServiceCommand {
         logger.debug(String.format("Пользователь %s. Начато выполнение команды %s", userName,
                 this.getCommandIdentifier()));
         sendAnswer(absSender, chat.getId(), this.getCommandIdentifier(), userName,
-                "Я бот марафона ЕШЬ И СТРОЙНЕЙ" +
-                        "Желаю удачи\uD83D\uDE42");
+                "Давайте начнём! Нам необходимо немного информации о Вас, введите 3 значения через пробел:"
+                    + "Ваш возраст (число), Ваш вес (число), Ваш номер телефона."
+                    + "Если Вам нужна помощь, нажмите /help");
         logger.debug(String.format("Пользователь %s. Завершено выполнение команды %s", userName,
                 this.getCommandIdentifier()));
     }

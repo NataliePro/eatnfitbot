@@ -10,9 +10,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.natapro.eatnfitbot.telegram.commands.service.HelpCommand;
-import ru.natapro.eatnfitbot.telegram.commands.service.SettingsCommand;
-import ru.natapro.eatnfitbot.telegram.commands.service.StartCommand;
+import ru.natapro.eatnfitbot.telegram.commands.HelpCommand;
+import ru.natapro.eatnfitbot.telegram.commands.SettingsCommand;
+import ru.natapro.eatnfitbot.telegram.commands.StartCommand;
 import ru.natapro.eatnfitbot.telegram.nonCommand.NonCommand;
 import ru.natapro.eatnfitbot.telegram.nonCommand.Settings;
 
@@ -72,7 +72,7 @@ public final class Bot extends TelegramLongPollingCommandBot {
         Long chatId = msg.getChatId();
         String userName = Utils.getUserName(msg);
 
-        String answer = nonCommand.nonCommandExecute(chatId, userName, msg.getText());
+        String answer = nonCommand.nonCommandExecute(chatId, msg);
         setAnswer(chatId, userName, answer);
     }
 
